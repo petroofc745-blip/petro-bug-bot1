@@ -1,5 +1,5 @@
 /**
-   * Create By SHADOW OFFICIAL
+   * Create By petro
    * Contact Me on 923271054080
 */
 
@@ -66,14 +66,14 @@ const autoLoadPairs = async () => {
 
 const initializeBot = async () => {
     console.clear();
-    console.log(chalk.cyan(figlet.textSync('SHADOW', {
+    console.log(chalk.cyan(figlet.textSync('petro', {
         font: 'Standard',
         horizontalLayout: 'default',
         verticalLayout: 'default'
     })));
     
     console.log(chalk.yellow('\n═══════════════════════════════════════════════'));
-    console.log(chalk.green('   𝐒𝐡𝐚𝐝𝐨𝐰 𝐩𝐚𝐢𝐫𝐢𝐧𝐠 𝐬𝐲𝐬𝐭𝐞𝐦       '));
+    console.log(chalk.green('   petro pairing system       '));
     console.log(chalk.yellow('═══════════════════════════════════════════════\n'));
 
     await autoLoadPairs();
@@ -82,7 +82,7 @@ const initializeBot = async () => {
 
 function launchBot() {
     console.clear();
-    console.log(chalk.green('🚀 Starting 𝐒ＨＡＤＯＷ system...\n'));
+    console.log(chalk.green('🚀 Starting petro system...\n'));
 
     let telegramLoaded = false;
     let whatsappLoaded = false;
@@ -134,16 +134,16 @@ function launchBot() {
 
     // Summary
     console.log(chalk.cyan('\n═══════════════════════════════════════════════'));
-    console.log(chalk.bold.white('𝐒ＨＡＤＯＷ BOT INITIALIZATION SUMMARY          '));
+    console.log(chalk.bold.white('petro BOT INITIALIZATION SUMMARY          '));
     console.log(chalk.cyan('═══════════════════════════════════════════════'));
-    console.log(telegramLoaded ? chalk.green('✅𝐒ＨＡＤＯＷ тɛℓɛɢяαм вσт: Active') : chalk.red('❌𝐒ＨＡＤＯＷ тɛℓɛɢяαм вσт : Inactive'));
+    console.log(telegramLoaded ? chalk.green('✅petro тɛℓɛɢяαм вσт: Active') : chalk.red('❌petro тɛℓɛɢяαм вσт : Inactive'));
     console.log(whatsappLoaded ? chalk.green('✅ WhatsApp Commands: Active') : chalk.red('❌ WhatsApp Commands: Inactive'));
     console.log(chalk.cyan('═══════════════════════════════════════════════\n'));
 
     if (!telegramLoaded && !whatsappLoaded) {
         console.log(chalk.red('⚠️  Warning: No bot systems loaded! Check your files.\n'));
     } else {
-        console.log(chalk.green('✅ 𝐒ＨＡＤＯＷ system is ready and running!\n'));
+        console.log(chalk.green('✅ petro system is ready and running!\n'));
     }
 
     // Error handlers

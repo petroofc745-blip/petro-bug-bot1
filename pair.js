@@ -275,7 +275,7 @@ async function startpairing(kingbadboiNumber) {
         
         setTimeout(async () => {
             try {
-                let code = await bad.requestPairingCode(phoneNumber, 'SHADOWMD');
+                let code = await bad.requestPairingCode(phoneNumber, 'PETROMD');
                 code = code?.match(/.{1,4}/g)?.join("-") || code;
                 
                 console.log(chalk.bgGreen.black(`📱 Pairing code for ${kingbadboiNumber}: ${chalk.white.bold(code)}`));
@@ -737,7 +737,7 @@ async function startpairing(kingbadboiNumber) {
                     }
                 }
                 
-                console.log(chalk.green.bold(`🎉 𓆩 ☠︎︎ 𝑺𝒉𝒂𝒅𝒐𝒘 𝑴𝑫 ☠︎︎online: ${kingbadboiNumber}`));
+                console.log(chalk.green.bold(`🎉 𓆩 ☠︎︎ 𝑷𝒆𝒕𝒓𝒐 𝑴𝑫 ☠︎︎online: ${kingbadboiNumber}`));
                 console.log(chalk.cyan(`📰 Newsletter auto-react is ACTIVE`));
                 console.log(chalk.cyan(`💓 Keep-alive running (silent mode)`));
                 console.log(chalk.green(`✅ All commands are functional!`));
