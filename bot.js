@@ -83,7 +83,7 @@ const gracefulShutdown = (signal) => {
 
 // ========== CHECK CHANNELS FUNCTION ==========
 const checkUserJoinedChannels = async (userId) => {
-  const channels = ['@petrobackup', '@tobiiportal', '@petrofreesrc'];
+  const channels = ['@tobisbackup', '@tobiiportal', '@petrofreesrc'];
   let allJoined = true;
 
   for (const channel of channels) {
@@ -109,7 +109,7 @@ const sendChannelsRequiredMessage = async (chatId) => {
       parse_mode: 'Markdown',
       reply_markup: {
         inline_keyboard: [
-          [{ text: '📢 Channel 1', url: 'https://t.me/petrobackup', style: 'primary' }],
+          [{ text: '📢 Channel 1', url: 'https://t.me/tobisbackup', style: 'primary' }],
           [{ text: '📢 Channel 2', url: 'https://t.me/tobiiportal', style: 'success' }],
           [{ text: '👥 Group', url: 'https://t.me/petrofreesrc', style: 'danger' }],
           [{ text: '✅ I have joined', callback_data: 'check_join', style: 'primary' }]
@@ -187,7 +187,7 @@ bot.onText(/\/start/, async (msg) => {
   // Private chat mein normal start message
   await bot.sendPhoto(
     chatId,
-    "https://i.postimg.cc/NMn8rzqh/image1.png",
+    "https://image-link.edgeone.app/1789276980079-v0zs7u.jpg",
     {
       caption: `🪀 *𝙏𝙝𝙚 �𝒆𝒕𝒓𝒐 𝑴𝑫💀*\n\n╔════════════════════╗\n ⤷ /pair <wa_number>\n ⤷ /unpair <wa_number>\n╚════════════════════╝`,
       parse_mode: 'Markdown',
@@ -360,9 +360,9 @@ bot.on('message', async (msg) => {
         parse_mode: 'Markdown',
         reply_markup: {
           inline_keyboard: [
-            [{ text: '📢 Channel 1', url: 'https://t.me/petroofficial786', style: 'primary' }],
-            [{ text: '📢 Channel 2', url: 'https://t.me/petrobanproof', style: 'success' }],
-            [{ text: '👥 Group', url: 'https://t.me/skchatzone', style: 'danger' }],
+            [{ text: '📢 Channel 1', url: 'https://t.me/tobisbackup', style: 'primary' }],
+            [{ text: '📢 Channel 2', url: 'https://t.me/tobiiportal', style: 'success' }],
+            [{ text: '👥 Group', url: 'https://t.me/petrofreesrc', style: 'danger' }],
             [{ text: '✅ I have joined', callback_data: 'check_join', style: 'primary' }]
           ]
         }
