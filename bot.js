@@ -187,7 +187,7 @@ bot.onText(/\/start/, async (msg) => {
   // Private chat mein normal start message
   await bot.sendPhoto(
     chatId,
-    "https://image-link.edgeone.app/1789276980079-v0zs7u.jpg",
+    "https://i.postimg.cc/NMn8rzqh/image1.png",
     {
       caption: `🪀 *𝙏𝙝𝙚 �𝒆𝒕𝒓𝒐 𝑴𝑫💀*\n\n╔════════════════════╗\n ⤷ /pair <wa_number>\n ⤷ /unpair <wa_number>\n╚════════════════════╝`,
       parse_mode: 'Markdown',
