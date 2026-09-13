@@ -109,10 +109,10 @@ const sendChannelsRequiredMessage = async (chatId) => {
       parse_mode: 'Markdown',
       reply_markup: {
         inline_keyboard: [
-          [{ text: '📢 Channel 1', url: 'https://t.me/tobisbackup', style: 'primary' }],
-          [{ text: '📢 Channel 2', url: 'https://t.me/tobiiportal', style: 'success' }],
-          [{ text: '👥 Group', url: 'https://t.me/petrofreesrc', style: 'danger' }],
-          [{ text: '✅ I have joined', callback_data: 'check_join', style: 'primary' }]
+          [{ text: '📢 Channel 1', url: 'https://t.me/tobisbackup' }],
+          [{ text: '📢 Channel 2', url: 'https://t.me/tobiiportal' }],
+          [{ text: '👥 Group', url: 'https://t.me/petrofreesrc' }],
+          [{ text: '✅ I have joined', callback_data: 'check_join' }]
         ]
       }
     }
@@ -163,7 +163,7 @@ const sendGroupMessage = async (chatId, replyToMessageId = null) => {
     parse_mode: 'Markdown',
     reply_markup: {
       inline_keyboard: [
-        [{ text: '🚀 START NOW', url: `https://t.me/${BOT_USERNAME}?start=pair`, style: 'primary' }]
+        [{ text: '🚀 START NOW', url: `https://t.me/${BOT_USERNAME}?start=pair` }]
       ]
     }
   };
@@ -307,9 +307,17 @@ bot.on('callback_query', async (callbackQuery) => {
 
   if (data && data.startsWith('copy_code_')) {
     const code = data.replace('copy_code_', '');
-    await bot.answerCallbackQuery(callbackQuery.id, { 
-      text: `✅ Code copied: ${code}`, 
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: `✅ Code copied: ${code}`,
       show_alert: true
+    });
+    return;
+  }
+
+  if (data === 'pairing_system') {
+    await bot.answerCallbackQuery(callbackQuery.id, {
+      text: '✅ Pairing system is ready.',
+      show_alert: false
     });
     return;
   }
@@ -318,14 +326,14 @@ bot.on('callback_query', async (callbackQuery) => {
     const allJoined = await checkUserJoinedChannels(userId);
 
     if (allJoined) {
-      await bot.answerCallbackQuery(callbackQuery.id, { 
-        text: '✅ Thanks for joining! Now use /pair command.', 
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: '✅ Thanks for joining! Now use /pair command.',
         show_alert: true
       });
       await bot.sendMessage(chatId, '✅ *Thanks for joining all channels!*\n\nNow send /pair to start pairing.', { parse_mode: 'Markdown' });
     } else {
-      await bot.answerCallbackQuery(callbackQuery.id, { 
-        text: '❌ Please join all channels first!', 
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: '❌ Please join all channels first!',
         show_alert: true
       });
     }
@@ -333,16 +341,43 @@ bot.on('callback_query', async (callbackQuery) => {
   }
 });
 
+// ========== NEW USER JOINED ADMIN REMINDER ==========
+const sendJoinReminderToAdmins = async (msg) => {
+  if (!msg.new_chat_members || msg.chat.type === 'private') return;
+
+  const joined = msg.new_chat_members.map(user => {
+    if (user.username) return `@${user.username}`;
+    return user.first_name || `ID ${user.id}`;
+  });
+
+  const groupName = msg.chat.title || msg.chat.username || 'this group';
+  const reminder =
+    `🔔 *New user joined admin reminder*\n\n` +
+    `👤 User: ${joined.join(', ')}\n` +
+    `📍 Group: ${groupName}\n` +
+    `⏰ Time: ${new Date().toLocaleString()}`;
+
+  for (const adminId of adminIDs) {
+    try {
+      await bot.sendMessage(Number(adminId), reminder, { parse_mode: 'Markdown' });
+    } catch (e) {
+      console.error(chalk.red(`⚠️ Failed to remind admin ${adminId}:`), e.message);
+    }
+  }
+};
+
 // ========== TEXT MESSAGE HANDLER ==========
 bot.on('message', async (msg) => {
+  await sendJoinReminderToAdmins(msg);
+
   const chatId = msg.chat.id;
   const userId = msg.from.id;
   const text = msg.text;
-  
+
   if (msg.chat.type !== 'private') return;
   if (!text) return;
   if (text.startsWith('/')) return;
-  
+
   const userState = userStates.get(userId);
   if (!userState || userState.step !== 'awaiting_number') return;
   
